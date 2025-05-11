@@ -2,15 +2,17 @@ import os
 import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.error import TelegramError
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
-# Set up logging
+# Set up logging with more detail
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.DEBUG,  # Changed to DEBUG for more detailed logs
 )
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         logger.info(f"User {update.effective_user.id} started the bot")
     except Exception as e:
-        logger.error(f"Error in start command: {e}")
+        logger.error(f"Error in start command: {e}", exc_info=True)
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Muqumiy haqida
@@ -44,11 +46,11 @@ async def muqumiy(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Satirasi, kulgi va hazil bilan yo‘g‘rilgan, ammo unda chuqur ijtimoiy mazmun mavjud.\n\n"
             "🕊 1903-yilda Farg‘onada vafot etgan. Uning merosi o‘zbek adabiyotida muhim o‘rin egallaydi."
         )
-        await update.message.reply_text(text, parse_mode="Markdown")
+        await update.message.reply_text(text, parse_mode="MarkdownV2")
         logger.info(f"User {update.effective_user.id} requested Muqumiy info")
     except Exception as e:
-        logger.error(f"Error in muqumiy function: {e}")
-        await update.messagereply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
+        logger.error(f"Error in muqumiy function: {e}", exc_info=True)
+        await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Stipendiya haqida
 async def stipendiya(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -69,10 +71,10 @@ async def stipendiya(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "🔍 Tanlov mezonlariga asosan ilmiy maqolalar, ijodiy ishlanmalar, tanlovlarda qatnashganlik e’tiborga olinadi.\n\n"
             "📌 Muqumiy stipendiyasi talabalarga rag‘bat, hurmat va yuksak motivatsiya beradi."
         )
-        await update.message.reply_text(text, parse_mode="Markdown")
+        await update.message.reply_text(text, parse_mode="MarkdownV2")
         logger.info(f"User {update.effective_user.id} requested stipendiya info")
     except Exception as e:
-        logger.error(f"Error in stipendiya function: {e}")
+        logger.error(f"Error in stipendiya function: {e}", exc_info=True)
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Ariza topshirish
@@ -83,37 +85,43 @@ async def ariza(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "1️⃣ O‘zingiz o‘qiyotgan OTMda stipendiya komissiyasiga murojaat qiling.\n"
             "2️⃣ Ilmiy yoki ijodiy ishingizni (maqola, loyiha, asar) taqdim eting.\n"
             "3️⃣ OTM tomonidan tavsiyanoma oling.\n"
-            "4️⃣ Hujjatlarni Oliy ta’lim vazirligiga yuboring.\ nouve5️⃣ Tanlov natijalarini kuting.\n\n"
+            "4️⃣ Hujjatlarni Oliy ta’lim vazirligiga yuboring.\n"
+            "5️⃣ Tanlov natijalarini kuting.\n\n"
             "🔍 Batafsil ma’lumot uchun: www.edu.uz"
         )
-        await update.message.reply_text(text, parse_mode="Markdown")
+        await update.message.reply_text(text, parse_mode="MarkdownV2")
         logger.info(f"User {update.effective_user.id} requested ariza info")
     except Exception as e:
-        logger.error(f"Error in ariza function: {e}")
+        logger.error(f"Error in ariza function: {e}", exc_info=True)
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Aloqa va takliflar
 async def aloqa(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
+        logger.debug(f"User {update.effective_user.id} triggered aloqa function")
         text = (
             "📞 *Aloqa va takliflar*\n\n"
             "Botimizni yaxshilash bo‘yicha takliflaringiz bo‘lsa, iltimos, bizga yozing!\n"
-            "📧 *Email*: muqumiy_bot@example.com\n"
-            "📱 *Telegram*: @MuqumiyBotAdmin\n\n"
+            "📧 Email: muqumiy_bot@example.com\n"
+            "📱 Telegram: @MuqumiyBotAdmin\n\n"
             "Agar stipendiya bo‘yicha rasmiy ma’lumot kerak bo‘lsa, Oliy ta’lim vazirligiga murojaat qiling:\n"
-            "🌐 *Sayt*: www.edu.uz\n"
-            "📞 *Telefon*: +998 71 246-12-34"
+            "🌐 Sayt: www.edu.uz\n"
+            "📞 Telefon: +998 71 246-12-34"
         )
-        await update.message.reply_text(text, parse_mode="Markdown")
-        logger.info(f"User {update.effective_user.id} requested aloqa info")
+        await update.message.reply_text(text, parse_mode="MarkdownV2")
+        logger.info(f"User {update.effective_user.id} successfully received aloqa info")
+    except TelegramError as te:
+        logger.error(f"Telegram API error in aloqa function: {te}", exc_info=True)
+        await update.message.reply_text("Telegram xatoligi yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
     except Exception as e:
-        logger.error(f"Error in aloqa function: {e}")
+        logger.error(f"Unexpected error in aloqa function: {e}", exc_info=True)
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Handle user messages
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         text = update.message.text.lower()
+        logger.debug(f"Received message from user {update.effective_user.id}: {text}")
         if "muqumiy" in text:
             await muqumiy(update, context)
         elif "stipendiya" in text:
@@ -126,12 +134,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("Iltimos, menyudan foydalaning yoki aniqroq yozing.")
         logger.info(f"User {update.effective_user.id} sent message: {text}")
     except Exception as e:
-        logger.error(f"Error in handle_message: {e}")
+        logger.error(f"Error in handle_message: {e}", exc_info=True)
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
 # Error handler
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    logger.error(f"Update {update} caused error {context.error}")
+    logger.error(f"Update {update} caused error {context.error}", exc_info=True)
     if update and update.message:
         await update.message.reply_text("Xatolik yuz berdi. Iltimos, qaytadan urinib ko‘ring.")
 
@@ -162,7 +170,7 @@ def main():
         logger.info("Bot is starting...")
         app.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
-        logger.error(f"Failed to start bot: {e}")
+        logger.error(f"Failed to start bot: {e}", exc_info=True)
 
 if __name__ == "__main__":
     main()
